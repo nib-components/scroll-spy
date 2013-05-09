@@ -3,8 +3,8 @@ function ScrollSpy(el, options) {
   this._onWindowScroll = _.throttle(this._onWindowScroll, 50);
 
   var self = this;
-
   this.el = $(el);
+  this.options = options || {};
   this.links = this.el.find('a');
   this.window = $(window);
   this.start();
@@ -21,7 +21,6 @@ function ScrollSpy(el, options) {
     targets.push(this);
     $(this).on('click', self._onClick);
   });
-
 }
 
 ScrollSpy.prototype._onWindowScroll = function() {
@@ -37,6 +36,13 @@ ScrollSpy.prototype._onWindowScroll = function() {
   }
 };
 
+ScrollSpy.prototype.getElementOffset = function(el) {
+  if(this.options.offsetAttribute) {
+    return el.getAttribute(this.options.offsetAttribute) * 1;
+  }
+  return 0;
+};
+
 ScrollSpy.prototype._onClick = function(event) {
   event.preventDefault();
 
@@ -44,14 +50,14 @@ ScrollSpy.prototype._onClick = function(event) {
   var el = $(event.currentTarget);
   var index = el.parent().index();
   var target = $(el.attr('href'));
-  var offset = el.attr('data-offset') * 1 || 0;
+  var offset = this.getElementOffset(el);
 
   this.stop();
   this.activate(index);
   this.isAnimating = true;
 
   $('html, body').stop().animate({ 
-    scrollTop: target.offset().top - $('body').offset().top + offset 
+    scrollTop: target.offset().top - $('body').offset().top + offset
   }, { 
     duration: 2000, 
     easing: 'easeOutExpo',
