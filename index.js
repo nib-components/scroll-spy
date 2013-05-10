@@ -50,16 +50,16 @@ ScrollSpy.prototype._onClick = function(event) {
   var el = $(event.currentTarget);
   var index = el.parent().index();
   var target = $(el.attr('href'));
-  var offset = this.getElementOffset(el);
+  var offset = this.getElementOffset(event.currentTarget);
 
   this.stop();
   this.activate(index);
   this.isAnimating = true;
 
-  $('html, body').stop().animate({ 
+  $('html, body').stop().animate({
     scrollTop: target.offset().top - $('body').offset().top + offset
-  }, { 
-    duration: 2000, 
+  }, {
+    duration: 2000,
     easing: 'easeOutExpo',
     complete: function(){
       self.start();
