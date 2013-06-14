@@ -1,39 +1,49 @@
+var event = require('event');
+var throttle = require('throttle');
+var offset = require('offset');
+var scrollTo = require('scroll-to');
+
 function ScrollSpy(el, options) {
-  _.bindAll(this, '_onWindowScroll', '_onClick');
-  this._onWindowScroll = _.throttle(this._onWindowScroll, 50);
-
   var self = this;
-  this.el = $(el);
+
+  this._onWindowScroll = throttle(this._onWindowScroll, 50).bind(this);
+  this._onClick = this._onClick.bind(this);
+  this._onWindowResize = throttle(this._onWindowResize, 500).bind(this);
+
+  this.el = el;
   this.options = options || {};
-  this.links = this.el.find('a');
-  this.window = $(window);
-  this.start();
+  this.links = Array.prototype.slice.call(this.el.querySelectorAll('a'));
 
-  var $body = $('body');
-  var offsets = this.offsets = [];
-  var targets = this.targets = [];
-
-  this.links.each(function(){
-    var id = this.getAttribute('href');
-    var offset = this.getAttribute('data-offset') * 1 || 0;
-    var point = $body.find(id).offset().top + offset;
-    offsets.push(point);
-    targets.push(this);
-    $(this).on('click', self._onClick);
+  // When clicking links in the nav
+  this.links.forEach(function(el){
+    event.bind(el, 'click', self._onClick);
   });
+
+  this.recalculate();
+  this.render();
+  this.start();
 }
 
+ScrollSpy.prototype.recalculate = function() {
+  var self = this;
+  this.offsets = [];
+  this.targets = [];
+  this.links.each(function(el){
+    var id = el.getAttribute('href');
+    var offset = el.getAttribute('data-offset') * 1 || 0;
+    var point = offset(document.body.querySelector(id)).top + offset;
+    self.offsets.push(point);
+    self.targets.push(el);
+  });
+};
+
+ScrollSpy.prototype._onWindowResize = function() {
+  this.recalculate();
+  this.render();
+};
+
 ScrollSpy.prototype._onWindowScroll = function() {
-  var currentScroll = $(window).scrollTop();
-  var offsets = this.offsets;
-
-  for (var i = 0; i < offsets.length; i++) {
-    var offset = offsets[i];
-
-    if( currentScroll >= offset && currentScroll < offsets[i + 1] ) {
-      this.activate(i);
-    }
-  }
+  this.render();
 };
 
 ScrollSpy.prototype.getElementOffset = function(el) {
@@ -43,49 +53,58 @@ ScrollSpy.prototype.getElementOffset = function(el) {
   return 0;
 };
 
+ScrollSpy.prototype.render = function() {
+  var currentScroll = document.body.scrollTop || document.querySelector('html').scrollTop;
+  this.offsets.forEach(function(offset, i){
+    if( currentScroll >= offset && currentScroll < this.offsets[i + 1] ) {
+      this.activate(i);
+    }
+  }, this);
+};
+
 ScrollSpy.prototype._onClick = function(event) {
-  event.preventDefault();
+  if(event.preventDefault) {
+    event.preventDefault();
+  }
 
   var self = this;
-  var el = $(event.currentTarget);
-  var index = el.parent().index();
-  var target = $(el.attr('href'));
-  var offset = this.getElementOffset(event.currentTarget);
+  var el = event.target || event.srcElement;
+  var index = this.links.indexOf(el);
+  var target = document.querySelector(el.getAttribute('href'));
+  var offset = this.getElementOffset(el);
 
   this.stop();
   this.activate(index);
   this.isAnimating = true;
 
-  $('html, body').stop().animate({
-    scrollTop: target.offset().top - $('body').offset().top + offset
-  }, {
-    duration: 2000,
-    easing: 'easeOutExpo',
-    complete: function(){
-      self.start();
-      self.isAnimating = false;
-    }
+  scrollTo(target, 2000, 'outExpo', function(){
+    self.start();
+    self.isAnimating = false;
   });
+
+  return false;
 };
 
 ScrollSpy.prototype.activate = function(index) {
   if( this._current === index ) return;
-  this.links.removeClass('is-selected');
-  this.links.eq(index).addClass('is-selected');
+  this.links.forEach(function(el){
+    el.classList.remove('is-selected');
+  });
+  this.links[index).classList.add('is-selected');
   this._current = index;
 };
 
 ScrollSpy.prototype.start = function() {
-  this.window.on('scroll.scrollSpy', this._onWindowScroll);
+  event.bind(window, 'scroll.scrollSpy', this._onWindowScroll);
 };
 
 ScrollSpy.prototype.stop = function() {
-  this.window.off('scroll.scrollSpy', this._onWindowScroll);
+  event.unbind(window, 'scroll.scrollSpy', this._onWindowScroll);
 };
 
 ScrollSpy.create = function(selector, options) {
-  $(selector).each(function(){
-    return new ScrollSpy(this, options);
+  Array.prototype.forEach.call(document.querySelectorAll(selector), function(el){
+    return new ScrollSpy(el, options);
   });
 };
 

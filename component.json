@@ -1,6 +1,14 @@
 {
   "name": "scroll-spy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Update the active state of a nav as you scroll down the page",
-  "scripts": ["index.js"]
+  "scripts": [
+    "index.js"
+  ],
+  "dependencies": {
+    "component/event": "*",
+    "component/throttle": "*",
+    "anthonyshort/offset": "*",
+    "anthonyshort/scroll-to": "*"
+  }
 }
