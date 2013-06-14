@@ -5,6 +5,7 @@ var scrollTo = require('scroll-to');
 
 function ScrollSpy(el, options) {
   var self = this;
+  this._started = false;
 
   this._onWindowScroll = throttle(this._onWindowScroll, 50).bind(this);
   this._onClick = this._onClick.bind(this);
@@ -36,9 +37,13 @@ ScrollSpy.prototype.recalculate = function() {
   });
 };
 
-ScrollSpy.prototype._onWindowResize = function() {
+ScrollSpy.prototype.update = function() {
   this.recalculate();
   this.render();
+};
+
+ScrollSpy.prototype._onWindowResize = function() {
+  this.update();
 };
 
 ScrollSpy.prototype._onWindowScroll = function() {
@@ -102,13 +107,40 @@ ScrollSpy.prototype.activate = function(index) {
 };
 
 ScrollSpy.prototype.start = function() {
+  if(this._started) {
+    return;
+  }
+  this._started = true;
   event.bind(window, 'scroll', this._onWindowScroll);
   event.bind(window, 'resize', this._onWindowResize);
+  this._checkDocumentHeight();
+};
+
+ScrollSpy.prototype._checkDocumentHeight = function() {
+  if(this._started === false ) {
+    return;
+  }
+
+  if(!this._height) {
+    this._height = document.body.offsetHeight;
+    this.update();
+  }
+  else {
+    var newHeight = document.body.offsetHeight;
+    if(newHeight !== this._height) {
+      this.update();
+      this._height = newHeight;
+    }
+  }
+
+  // Keep calling this method to update the height
+  setTimeout(this._checkDocumentHeight.bind(this), 500);
 };
 
 ScrollSpy.prototype.stop = function() {
   event.unbind(window, 'scroll', this._onWindowScroll);
   event.unbind(window, 'resize', this._onWindowResize);
+  this._started = false;
 };
 
 ScrollSpy.create = function(selector, options) {

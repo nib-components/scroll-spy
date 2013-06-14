@@ -1,6 +1,6 @@
 {
   "name": "scroll-spy",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Update the active state of a nav as you scroll down the page",
   "scripts": [
     "index.js"
