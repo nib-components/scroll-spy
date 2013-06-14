@@ -2,6 +2,7 @@ var event = require('event');
 var throttle = require('throttle');
 var offset = require('offset');
 var scrollTo = require('scroll-to');
+var toArray = require('to-array');
 
 function ScrollSpy(el, options) {
   var self = this;
@@ -13,7 +14,7 @@ function ScrollSpy(el, options) {
 
   this.el = el;
   this.options = options || {};
-  this.links = Array.prototype.slice.call(this.el.querySelectorAll('a'));
+  this.links = toArray(this.el.querySelectorAll('a'));
 
   // When clicking links in the nav
   this.links.forEach(function(el){
