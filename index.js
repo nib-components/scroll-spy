@@ -31,7 +31,7 @@ ScrollSpy.prototype.recalculate = function() {
     var id = el.getAttribute('href');
     var target = document.body.querySelector(id);
     var elOffset = el.getAttribute('data-offset') * 1 || 0;
-    var point = offset(target).top + elOffset;
+    var point = document.body.scrollTop + offset(target).top + elOffset;
     self.offsets.push(point);
   });
 };
@@ -54,11 +54,13 @@ ScrollSpy.prototype.getElementOffset = function(el) {
 
 ScrollSpy.prototype.render = function() {
   var currentScroll = document.body.scrollTop || document.querySelector('html').scrollTop;
+  var active = 0;
   this.offsets.forEach(function(offset, i){
-    if( currentScroll >= offset && currentScroll < this.offsets[i + 1] ) {
-      this.activate(i);
+    if( currentScroll >= offset ) {
+      active = i;
     }
   }, this);
+  this.activate(active);
 };
 
 ScrollSpy.prototype._onClick = function(event) {
@@ -101,10 +103,12 @@ ScrollSpy.prototype.activate = function(index) {
 
 ScrollSpy.prototype.start = function() {
   event.bind(window, 'scroll', this._onWindowScroll);
+  event.bind(window, 'resize', this._onWindowResize);
 };
 
 ScrollSpy.prototype.stop = function() {
   event.unbind(window, 'scroll', this._onWindowScroll);
+  event.unbind(window, 'resize', this._onWindowResize);
 };
 
 ScrollSpy.create = function(selector, options) {
