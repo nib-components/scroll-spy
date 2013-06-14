@@ -27,13 +27,12 @@ function ScrollSpy(el, options) {
 ScrollSpy.prototype.recalculate = function() {
   var self = this;
   this.offsets = [];
-  this.targets = [];
-  this.links.each(function(el){
+  this.links.forEach(function(el){
     var id = el.getAttribute('href');
-    var offset = el.getAttribute('data-offset') * 1 || 0;
-    var point = offset(document.body.querySelector(id)).top + offset;
+    var target = document.body.querySelector(id);
+    var elOffset = el.getAttribute('data-offset') * 1 || 0;
+    var point = offset(target).top + elOffset;
     self.offsets.push(point);
-    self.targets.push(el);
   });
 };
 
@@ -67,6 +66,10 @@ ScrollSpy.prototype._onClick = function(event) {
     event.preventDefault();
   }
 
+  if(this.isAnimating) {
+    return false;
+  }
+
   var self = this;
   var el = event.target || event.srcElement;
   var index = this.links.indexOf(el);
@@ -77,10 +80,12 @@ ScrollSpy.prototype._onClick = function(event) {
   this.activate(index);
   this.isAnimating = true;
 
-  scrollTo(target, 2000, 'outExpo', function(){
+  scrollTo(target, 2000, 'outExpo');
+
+  setTimeout(function(){
     self.start();
     self.isAnimating = false;
-  });
+  }, 2000);
 
   return false;
 };
@@ -90,16 +95,16 @@ ScrollSpy.prototype.activate = function(index) {
   this.links.forEach(function(el){
     el.classList.remove('is-selected');
   });
-  this.links[index).classList.add('is-selected');
+  this.links[index].classList.add('is-selected');
   this._current = index;
 };
 
 ScrollSpy.prototype.start = function() {
-  event.bind(window, 'scroll.scrollSpy', this._onWindowScroll);
+  event.bind(window, 'scroll', this._onWindowScroll);
 };
 
 ScrollSpy.prototype.stop = function() {
-  event.unbind(window, 'scroll.scrollSpy', this._onWindowScroll);
+  event.unbind(window, 'scroll', this._onWindowScroll);
 };
 
 ScrollSpy.create = function(selector, options) {
