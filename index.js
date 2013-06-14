@@ -2,7 +2,14 @@ var event = require('event');
 var throttle = require('throttle');
 var offset = require('offset');
 var scrollTo = require('scroll-to');
-var toArray = require('to-array');
+
+var toArray = function(collection) {
+  var arr = [];
+  for (var i = 0; i < collection.length; i++) {
+    arr.push(collection[i]);
+  }
+  return arr;
+};
 
 function ScrollSpy(el, options) {
   var self = this;
