@@ -9,6 +9,7 @@
     "component/event": "*",
     "component/throttle": "*",
     "anthonyshort/offset": "*",
-    "anthonyshort/scroll-to": "*"
+    "anthonyshort/scroll-to": "*",
+    "component/emitter": "*"
   }
 }

@@ -2,6 +2,7 @@ var event = require('event');
 var throttle = require('throttle');
 var offset = require('offset');
 var scrollTo = require('scroll-to');
+var emitter = require('emitter');
 
 var toArray = function(collection) {
   var arr = [];
@@ -32,6 +33,8 @@ function ScrollSpy(el, options) {
   this.render();
   this.start();
 }
+
+emitter(ScrollSpy.prototype);
 
 ScrollSpy.prototype.recalculate = function() {
   var self = this;
@@ -101,6 +104,8 @@ ScrollSpy.prototype._onClick = function(event) {
     self.start();
     self.isAnimating = false;
   }, 2000);
+
+  this.emit('click', index, el, target);
 
   return false;
 };
